@@ -9,13 +9,15 @@ import (
 func (r *repositories) CreateUser(ctx context.Context, data models.User) error {
 	tx := r.db.Begin()
 
-	err := tx.Create(&data).Error
-	if err != nil {
+	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	_ = tx.Commit().Error
+	err := tx.Commit().Error
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -28,7 +30,11 @@ func (r *repositories) GetUsers(ctx context.Context, users []models.User) ([]mod
 		return nil, err
 	}
 
-	_ = tx.Commit().Error
+	err := tx.Commit().Error
+	if err != nil {
+		return users, err
+	}
+
 	return users, nil
 }
 
@@ -40,7 +46,10 @@ func (r *repositories) GetUser(ctx context.Context, user models.User, name strin
 		return user, err
 	}
 
-	_ = tx.Commit()
+	err := tx.Commit().Error
+	if err != nil {
+		return user, err
+	}
 
 	return user, nil
 }
@@ -53,8 +62,11 @@ func (r *repositories) UpdateUser(ctx context.Context, user models.User, id int6
 		return err
 	}
 
-	_ = tx.Commit()
-
+	err := tx.Commit().Error
+	if err != nil {
+		return err
+	}
+	
 	return nil
 }
 
@@ -65,7 +77,10 @@ func (r *repositories) DeleteUser(ctx context.Context, user models.User, id int6
 		return err
 	}
 
-	_ = tx.Commit()
+	err := tx.Commit().Error
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
